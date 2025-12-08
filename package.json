@@ -1,0 +1,22 @@
+{
+  "name": "chicken-farming-ai-app",
+  "version": "1.0.0",
+  "description": "AI-powered chicken farming management application",
+  "scripts": {
+    "dev": "python api/index.py",
+    "start": "python api/index.py"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=14"
+  },
+  "keywords": [
+    "flask",
+    "python",
+    "ai",
+    "chicken-farming",
+    "vercel"
+  ],
+  "author": "AI Chicken Farming App",
+  "license": "MIT"
+}

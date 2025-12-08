@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken Farming AI App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #e4edf5);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-card {
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            background: white;
+            border: none;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #7dbb9c, #4a8c7b);
+            color: white;
+            border-bottom: 3px solid #6aa887;
+        }
+        .stats-box {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        .stats-box:hover {
+            transform: translateY(-5px);
+        }
+        .chicken-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .chicken-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .health-good {
+            border-left: 5px solid #51cf66;
+            background-color: #f8fff9;
+        }
+        .health-warning {
+            border-left: 5px solid #fcc419;
+            background-color: #fffdef;
+        }
+        .health-critical {
+            border-left: 5px solid #ff6b6b;
+            background-color: #fff8f8;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #40c057, #37b24d);
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table th {
+            background-color: #e6f7ee;
+            color: #2b8a3e;
+        }
+        .badge {
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-weight: 500;
+        }
+        .bg-success {
+            background-color: #51cf66 !important;
+        }
+        .bg-warning {
+            background-color: #fcc419 !important;
+        }
+        .bg-danger {
+            background-color: #ff6b6b !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg header-bg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-egg"></i> Chicken Farming AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#chickens">Chickens</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#eggs">Egg Production</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#health">Health</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#feed">Feed Schedule</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Dashboard Section -->
+        <section id="dashboard">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mb-4">Farm Dashboard</h2>
+                    <div class="row">
+                        <!-- Stats Boxes -->
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h4 id="total-chickens">0</h4>
+                                <p>Total Chickens</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h4 id="healthy-chickens">0</h4>
+                                <p>Healthy Chickens</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h4 id="daily-eggs">0</h4>
+                                <p>Daily Egg Production</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h4 id="health-alerts">0</h4>
+                                <p>Health Alerts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <div class="dashboard-card p-3">
+                        <canvas id="productionChart" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dashboard-card p-3">
+                        <canvas id="healthChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Chickens Section -->
+        <section id="chickens" class="mt-5" style="display:none;">
+            <h2>Chicken Management</h2>
+            <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addChickenModal">Add Chicken</button>
+            
+            <div id="chickens-list">
+                <!-- Chickens will be loaded here dynamically -->
+            </div>
+        </section>
+        
+        <!-- Eggs Section -->
+        <section id="eggs" class="mt-5" style="display:none;">
+            <h2>Egg Production</h2>
+            <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#recordEggsModal">Record Egg Production</button>
+            
+            <div class="dashboard-card p-3">
+                <canvas id="dailyProductionChart" height="200"></canvas>
+            </div>
+            
+            <div id="eggs-list" class="mt-3">
+                <!-- Egg records will be loaded here dynamically -->
+            </div>
+        </section>
+        
+        <!-- Health Section -->
+        <section id="health" class="mt-5" style="display:none;">
+            <h2>Health Monitoring</h2>
+            <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#recordHealthModal">Record Health Check</button>
+            
+            <div id="health-alerts">
+                <!-- Health alerts will be loaded here dynamically -->
+            </div>
+            
+            <div id="health-records" class="mt-3">
+                <!-- Health records will be loaded here dynamically -->
+            </div>
+        </section>
+        
+        <!-- Feed Schedule Section -->
+        <section id="feed" class="mt-5" style="display:none;">
+            <h2>Feed Schedule</h2>
+            <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#scheduleFeedModal">Schedule Feed</button>
+            
+            <div id="feed-schedule">
+                <!-- Feed schedule will be loaded here dynamically -->
+            </div>
+        </section>
+    </div>
+    
+    <!-- Add Chicken Modal -->
+    <div class="modal fade" id="addChickenModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Chicken</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="chickenForm">
+                        <div class="mb-3">
+                            <label for="chickenName" class="form-label">Name/ID</label>
+                            <input type="text" class="form-control" id="chickenName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="chickenBreed" class="form-label">Breed</label>
+                            <input type="text" class="form-control" id="chickenBreed">
+                        </div>
+                        <div class="mb-3">
+                            <label for="chickenAge" class="form-label">Age (weeks)</label>
+                            <input type="number" class="form-control" id="chickenAge" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="chickenHealth" class="form-label">Health Status</label>
+                            <select class="form-control" id="chickenHealth">
+                                <option value="healthy">Healthy</option>
+                                <option value="sick">Sick</option>
+                                <option value="recovery">Recovering</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="chickenNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="chickenNotes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addChicken()">Add Chicken</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Record Eggs Modal -->
+    <div class="modal fade" id="recordEggsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Record Egg Production</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="eggsForm">
+                        <div class="mb-3">
+                            <label for="chickenIdEggs" class="form-label">Chicken ID</label>
+                            <input type="number" class="form-control" id="chickenIdEggs" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eggQuantity" class="form-label">Eggs Collected</label>
+                            <input type="number" class="form-control" id="eggQuantity" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eggDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="eggDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eggNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="eggNotes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="recordEggProduction()">Record Eggs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Record Health Modal -->
+    <div class="modal fade" id="recordHealthModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Record Health Check</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="healthForm">
+                        <div class="mb-3">
+                            <label for="chickenIdHealth" class="form-label">Chicken ID</label>
+                            <input type="number" class="form-control" id="chickenIdHealth" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="healthStatus" class="form-label">Health Status</label>
+                            <select class="form-control" id="healthStatus">
+                                <option value="healthy">Healthy</option>
+                                <option value="sick">Sick</option>
+                                <option value="recovery">Recovering</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="symptoms" class="form-label">Symptoms</label>
+                            <textarea class="form-control" id="symptoms"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="treatment" class="form-label">Treatment</label>
+                            <textarea class="form-control" id="treatment"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="healthNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="healthNotes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="recordHealthCheck()">Record Health</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Schedule Feed Modal -->
+    <div class="modal fade" id="scheduleFeedModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Feed</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="feedForm">
+                        <div class="mb-3">
+                            <label for="chickenIdFeed" class="form-label">Chicken ID</label>
+                            <input type="number" class="form-control" id="chickenIdFeed">
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedType" class="form-label">Feed Type</label>
+                            <input type="text" class="form-control" id="feedType" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedTime" class="form-label">Scheduled Time</label>
+                            <input type="time" class="form-control" id="feedTime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedAmount" class="form-label">Amount (grams)</label>
+                            <input type="number" class="form-control" id="feedAmount" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="feedNotes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="scheduleFeed()">Schedule Feed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        // API base URL
+        const API_BASE = '/api';
+        
+        // Navigation
+        document.querySelectorAll('nav .nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Hide all sections
+                document.querySelectorAll('section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Show selected section
+                const target = e.target.getAttribute('href').substring(1);
+                document.getElementById(target).style.display = 'block';
+                
+                // Update active nav link
+                document.querySelectorAll('nav .nav-link').forEach(navLink => {
+                    navLink.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                
+                // Load content based on section
+                switch(target) {
+                    case 'dashboard':
+                        loadDashboardData();
+                        break;
+                    case 'chickens':
+                        loadChickens();
+                        break;
+                    case 'eggs':
+                        loadEggProduction();
+                        initDailyProductionChart();
+                        break;
+                    case 'health':
+                        loadHealthRecords();
+                        break;
+                    case 'feed':
+                        loadFeedSchedule();
+                        break;
+                }
+            });
+        });
+        
+        // Load initial dashboard data
+        window.onload = function() {
+            loadDashboardData();
+            
+            // Initialize charts
+            initProductionChart();
+            initHealthChart();
+            initDailyProductionChart();
+        };
+        
+        // API utility function
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API call error:', error);
+                alert('An error occurred while communicating with the server.');
+                return null;
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            const data = await apiCall('/dashboard');
+            if (data) {
+                document.getElementById('total-chickens').textContent = data.total_chickens || 0;
+                document.getElementById('healthy-chickens').textContent = data.healthy_chickens || 0;
+                document.getElementById('daily-eggs').textContent = data.daily_egg_count || 0;
+                document.getElementById('health-alerts').textContent = data.health_alerts || 0;
+
+                // Update dashboard with AI insights if available
+                if (data.ai_insights) {
+                    // Create or update AI insights section
+                    const statsContainer = document.querySelector('.row .col-md-3:last-child').parentElement;
+                    if (!document.getElementById('ai-insights-section')) {
+                        const aiInsightsDiv = document.createElement('div');
+                        aiInsightsDiv.id = 'ai-insights-section';
+                        aiInsightsDiv.className = 'col-12 mt-4';
+                        aiInsightsDiv.innerHTML = `
+                            <div class="card bg-light p-3">
+                                <h5>AI Insights & Recommendations</h5>
+                                <ul id="ai-recommendations-list">
+                                    ${data.ai_insights.recommendations ? data.ai_insights.recommendations.map(rec => `<li>${rec}</li>`).join('') : '<li>No recommendations available</li>'}
+                                </ul>
+                            </div>
+                        `;
+                        statsContainer.appendChild(aiInsightsDiv);
+                    } else {
+                        document.getElementById('ai-recommendations-list').innerHTML =
+                            data.ai_insights.recommendations ? data.ai_insights.recommendations.map(rec => `<li>${rec}</li>`).join('') : '<li>No recommendations available</li>';
+                    }
+                }
+            }
+        }
+        
+        // Load chickens
+        async function loadChickens() {
+            const chickens = await apiCall('/chickens');
+            const chickensList = document.getElementById('chickens-list');
+            
+            if (!chickens) return;
+            
+            chickensList.innerHTML = '';
+            
+            chickens.forEach(chicken => {
+                const chickenCard = document.createElement('div');
+                chickenCard.className = `chicken-card ${chicken.health_status === 'healthy' ? 'health-good' : chicken.health_status === 'sick' ? 'health-warning' : 'health-critical'}`;
+                chickenCard.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5>${chicken.name || `Chicken ${chicken.id}`} (ID: ${chicken.id})</h5>
+                            <p><strong>Breed:</strong> ${chicken.breed || 'Unknown'} | <strong>Age:</strong> ${chicken.age || 0} weeks</p>
+                            <p><strong>Health:</strong> <span class="badge ${chicken.health_status === 'healthy' ? 'bg-success' : chicken.health_status === 'sick' ? 'bg-warning' : 'bg-danger'}">${chicken.health_status}</span></p>
+                            ${chicken.health_risk ? `<p><strong>AI Health Risk:</strong> <span class="badge ${chicken.health_risk.risk_level === 'high' ? 'bg-danger' : 'bg-success'}">${chicken.health_risk.risk_level} (${Math.round(chicken.health_risk.probability * 100)}%)</span></p>` : ''}
+                            ${chicken.production_prediction ? `<p><strong>AI Production:</strong> ~${Math.round(chicken.production_prediction.predicted_eggs_per_week)} eggs/week</p>` : ''}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewChickenDetails(${chicken.id})">View Details</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteChicken(${chicken.id})">Remove</button>
+                        </div>
+                    </div>
+                `;
+                chickensList.appendChild(chickenCard);
+            });
+        }
+        
+        // View chicken details (placeholder)
+        function viewChickenDetails(id) {
+            alert(`Viewing details for Chicken ID: ${id}`);
+        }
+        
+        // Delete a chicken
+        async function deleteChicken(id) {
+            if (confirm(`Are you sure you want to remove Chicken ID: ${id}?`)) {
+                const result = await apiCall(`/chickens/${id}`, 'DELETE');
+                if (result) {
+                    loadChickens(); // Refresh the list
+                    loadDashboardData(); // Update dashboard stats
+                }
+            }
+        }
+        
+        // Load egg production
+        async function loadEggProduction() {
+            const eggs = await apiCall('/eggs');
+            const eggsList = document.getElementById('eggs-list');
+            
+            if (!eggs) return;
+            
+            if (eggs.length === 0) {
+                eggsList.innerHTML = '<p>No egg production records yet.</p>';
+                return;
+            }
+            
+            eggsList.innerHTML = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Chicken ID</th>
+                            <th>Date</th>
+                            <th>Quantity</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${eggs.map(egg => `
+                            <tr>
+                                <td>${egg.id}</td>
+                                <td>${egg.chicken_id}</td>
+                                <td>${egg.date}</td>
+                                <td>${egg.quantity}</td>
+                                <td>${egg.notes || ''}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Load health records
+        async function loadHealthRecords() {
+            const healthRecords = await apiCall('/health');
+            
+            // Display health alerts
+            const healthAlerts = document.getElementById('health-alerts');
+            if (healthRecords && healthRecords.recent_health_records && healthRecords.recent_health_records.length > 0) {
+                healthAlerts.innerHTML = `
+                    <h5>Recent Health Issues</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Chicken ID</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Symptoms</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${healthRecords.recent_health_records.map(record => `
+                                <tr>
+                                    <td>${record.chicken_id}</td>
+                                    <td>${record.date}</td>
+                                    <td><span class="badge bg-warning">${record.health_status}</span></td>
+                                    <td>${record.symptoms || 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                healthAlerts.innerHTML = '<p>No recent health alerts.</p>';
+            }
+            
+            // For now, health records section will show the same data
+            const healthRecordsSection = document.getElementById('health-records');
+            healthRecordsSection.innerHTML = '<p>Health records loaded.</p>';
+        }
+        
+        // Load feed schedule
+        async function loadFeedSchedule() {
+            const feedSchedule = await apiCall('/feed');
+            const feedScheduleList = document.getElementById('feed-schedule');
+            
+            if (!feedSchedule) return;
+            
+            if (feedSchedule.length === 0) {
+                feedScheduleList.innerHTML = '<p>No feed schedules yet.</p>';
+                return;
+            }
+            
+            feedScheduleList.innerHTML = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Chicken ID</th>
+                            <th>Feed Type</th>
+                            <th>Scheduled Time</th>
+                            <th>Amount (g)</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${feedSchedule.map(feed => `
+                            <tr>
+                                <td>${feed.id}</td>
+                                <td>${feed.chicken_id || 'All'}</td>
+                                <td>${feed.feed_type}</td>
+                                <td>${feed.scheduled_time}</td>
+                                <td>${feed.amount}</td>
+                                <td>${feed.notes || ''}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Add chicken
+        async function addChicken() {
+            const chickenData = {
+                name: document.getElementById('chickenName').value,
+                breed: document.getElementById('chickenBreed').value,
+                age: parseInt(document.getElementById('chickenAge').value),
+                health_status: document.getElementById('chickenHealth').value,
+                notes: document.getElementById('chickenNotes').value
+            };
+            
+            const result = await apiCall('/chickens', 'POST', chickenData);
+            if (result) {
+                alert('Chicken added successfully!');
+                document.getElementById('chickenForm').reset();
+                loadChickens(); // Refresh the list
+                loadDashboardData(); // Update dashboard stats
+                document.getElementById('addChickenModal').querySelector('.btn-close').click(); // Close modal
+            }
+        }
+        
+        // Record egg production
+        async function recordEggProduction() {
+            const eggsData = {
+                chicken_id: parseInt(document.getElementById('chickenIdEggs').value),
+                quantity: parseInt(document.getElementById('eggQuantity').value),
+                date: document.getElementById('eggDate').value,
+                notes: document.getElementById('eggNotes').value
+            };
+            
+            const result = await apiCall('/eggs', 'POST', eggsData);
+            if (result) {
+                alert('Egg production recorded successfully!');
+                document.getElementById('eggsForm').reset();
+                loadEggProduction(); // Refresh the list
+                loadDashboardData(); // Update dashboard stats
+                document.getElementById('recordEggsModal').querySelector('.btn-close').click(); // Close modal
+            }
+        }
+        
+        // Record health check
+        async function recordHealthCheck() {
+            const healthData = {
+                chicken_id: parseInt(document.getElementById('chickenIdHealth').value),
+                health_status: document.getElementById('healthStatus').value,
+                symptoms: document.getElementById('symptoms').value,
+                treatment: document.getElementById('treatment').value,
+                notes: document.getElementById('healthNotes').value
+            };
+            
+            const result = await apiCall('/health', 'POST', healthData);
+            if (result) {
+                alert('Health check recorded successfully!');
+                document.getElementById('healthForm').reset();
+                loadHealthRecords(); // Refresh the list
+                loadDashboardData(); // Update dashboard stats
+                document.getElementById('recordHealthModal').querySelector('.btn-close').click(); // Close modal
+            }
+        }
+        
+        // Schedule feed
+        async function scheduleFeed() {
+            const feedData = {
+                chicken_id: parseInt(document.getElementById('chickenIdFeed').value) || null,
+                feed_type: document.getElementById('feedType').value,
+                scheduled_time: document.getElementById('feedTime').value,
+                amount: parseFloat(document.getElementById('feedAmount').value),
+                notes: document.getElementById('feedNotes').value
+            };
+            
+            const result = await apiCall('/feed', 'POST', feedData);
+            if (result) {
+                alert('Feed scheduled successfully!');
+                document.getElementById('feedForm').reset();
+                loadFeedSchedule(); // Refresh the list
+                document.getElementById('scheduleFeedModal').querySelector('.btn-close').click(); // Close modal
+            }
+        }
+        
+        // Initialize charts
+        function initProductionChart() {
+            const ctx = document.getElementById('productionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+                    datasets: [{
+                        label: 'Egg Production',
+                        data: [28, 32, 35, 34, 36, 33, 35],
+                        borderColor: '#3d6b25',
+                        backgroundColor: 'rgba(61, 107, 37, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Egg Production Trend'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initHealthChart() {
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Healthy', 'Sick', 'Recovering'],
+                    datasets: [{
+                        data: [38, 2, 2],
+                        backgroundColor: ['#28a745', '#ffc107', '#17a2b8'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Chicken Health Status'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initDailyProductionChart() {
+            const ctx = document.getElementById('dailyProductionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Eggs Collected',
+                        data: [32, 35, 33, 34, 31, 28, 30],
+                        backgroundColor: 'rgba(61, 107, 37, 0.6)',
+                        borderColor: '#3d6b25',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Daily Egg Production'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
