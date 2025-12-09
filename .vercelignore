@@ -1,0 +1,44 @@
+# Exclude everything by default to avoid packaging large unrelated files
+*
+
+# Keep Vercel config and the function entrypoint
+!.vercelignore
+!vercel.json
+!requirements.txt
+
+# Keep API and model code
+!api/
+!api/**
+!models/
+!models/**
+
+# Keep templates/static needed by the Flask app
+!templates/
+!templates/**
+!static/
+!static/**
+
+# Optional: keep top-level README and package files
+!README.md
+!package.json
+
+# Exclude common large dirs
+node_modules/
+.git/
+.build/
+dist/
+__pycache__/
+*.pyc
+*.pkl
+*.pth
+*.pt
+*.h5
+
+# Exclude data and other project folders if present
+data/
+public/
+
+# If your repo is monorepo, ensure other project folders are excluded (add their names here)
+building-with-ai-tools/
+Frank-Kwizigira/
+Queen-Zigashane/
